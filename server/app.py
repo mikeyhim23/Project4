@@ -88,6 +88,14 @@ class TaskResource(Resource):
         return jsonify({'id': new_task.id, 'title': new_task.title, 'description': new_task.description, 'status': new_task.status})
 
 
+class Project(Resource):
+    def get(self, id):
+        project = Project.query.get(id)
+        if not project:
+            return {'message': 'Project not found'}, 404
+        return jsonify({'id': project.id, 'name': project.name, 'description': project.description})
+
+
 @app.route('/')
 def home():
     return "<h1>Welcome to Task Tracker App</h1>"
