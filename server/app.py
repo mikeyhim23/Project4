@@ -55,7 +55,7 @@ class UserTask(db.Model):
 
 
 class UserResource(Resource):
-    def get(self,id):
+    def get(self, id):
         user = User.query.get(id)
         if not user:
             return {'message': 'User not found'}, 404
@@ -73,8 +73,10 @@ class UserResource(Resource):
         db.session.commit()
         return jsonify({'id': new_user.id, 'username': new_user.username, 'email': new_user.email})
 
+# CRUD Endpoints for Task
+
 class TaskResource(Resource):
-    def get(self,id):
+    def get(self, id):
         task = Task.query.get(id)
         if not task:
             return {'message': 'Task not found'}, 404
@@ -87,8 +89,9 @@ class TaskResource(Resource):
         db.session.commit()
         return jsonify({'id': new_task.id, 'title': new_task.title, 'description': new_task.description, 'status': new_task.status})
 
+# CRUD Endpoints for Project
 
-class Project(Resource):
+class ProjectResource(Resource):
     def get(self, id):
         project = Project.query.get(id)
         if not project:
@@ -101,6 +104,8 @@ class Project(Resource):
         db.session.add(new_project)
         db.session.commit()
         return jsonify({'id': new_project.id, 'name': new_project.name, 'description': new_project.description})
+
+# CRUD Endpoints for UserTask (Many-to-Many)
 
 class UserTaskResource(Resource):
     def get(self, id):
@@ -129,6 +134,11 @@ class UserTaskResource(Resource):
             'user': new_user_task.user.username,
             'project': new_user_task.project.name
         })
+
+api.add_resource(UserResource, '/users', '/users/<int:user_id>')
+api.add_resource(TaskResource, '/tasks', '/tasks/<int:task_id>')
+api.add_resource(ProjectResource, '/projects', '/projects/<int:project_id>')
+api.add_resource(UserTaskResource, '/user_tasks', '/user_tasks/<int:usertask_id>')
 
 @app.route('/')
 def home():
