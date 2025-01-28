@@ -61,7 +61,18 @@ class UserResource(Resource):
             return {'message': 'User not found'}, 404
         return jsonify({'id': user.id, 'username': user.username, 'email': user.email})
 
-  
+    def post(self):
+        data = request.get_json()
+        if User.query.filter_by(username=data['username']).first():
+            return {'message': 'Username already taken'}, 400
+        if '@' not in data['email']:
+            return {'message': 'Invalid email format, must contain "@"'}, 400
+        
+        new_user = User(username=data['username'], email=data['email'])
+        db.session.add(new_user)
+        db.session.commit()
+        return jsonify({'id': new_user.id, 'username': new_user.username, 'email': new_user.email})
+
 @app.route('/')
 def home():
     return "<h1>Welcome to Task Tracker App</h1>"
