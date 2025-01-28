@@ -95,6 +95,12 @@ class Project(Resource):
             return {'message': 'Project not found'}, 404
         return jsonify({'id': project.id, 'name': project.name, 'description': project.description})
 
+    def post(self):
+        data = request.get_json()
+        new_project = Project(name=data['name'], description=data['description'])
+        db.session.add(new_project)
+        db.session.commit()
+        return jsonify({'id': new_project.id, 'name': new_project.name, 'description': new_project.description})
 
 @app.route('/')
 def home():
