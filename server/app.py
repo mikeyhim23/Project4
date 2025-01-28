@@ -116,6 +116,20 @@ class UserTaskResource(Resource):
             'project': user_task.project.name
         })
 
+    def post(self):
+        data = request.get_json()
+        new_user_task = UserTask(user_id=data['user_id'], project_id=data['project_id'], role=data['role'])
+        db.session.add(new_user_task)
+        db.session.commit()
+        return jsonify({
+            'id': new_user_task.id,
+            'role': new_user_task.role,
+            'user_id': new_user_task.user_id,
+            'project_id': new_user_task.project_id,
+            'user': new_user_task.user.username,
+            'project': new_user_task.project.name
+        })
+
 @app.route('/')
 def home():
     return "<h1>Welcome to Task Tracker App</h1>"
