@@ -80,7 +80,13 @@ class TaskResource(Resource):
             return {'message': 'Task not found'}, 404
         return jsonify({'id': task.id, 'title': task.title, 'description': task.description, 'status': task.status})
 
-    
+    def post(self):
+        data = request.get_json()
+        new_task = Task(title=data['title'], description=data['description'], status=data.get('status', 'pending'), user_id=data['user_id'])
+        db.session.add(new_task)
+        db.session.commit()
+        return jsonify({'id': new_task.id, 'title': new_task.title, 'description': new_task.description, 'status': new_task.status})
+
 
 @app.route('/')
 def home():
