@@ -55,8 +55,8 @@ class UserTask(db.Model):
 
 
 class UserResource(Resource):
-    def get(self, user_id):
-        user = User.query.get(user_id)
+    def get(self,id):
+        user = User.query.get(id)
         if not user:
             return {'message': 'User not found'}, 404
         return jsonify({'id': user.id, 'username': user.username, 'email': user.email})
@@ -72,6 +72,15 @@ class UserResource(Resource):
         db.session.add(new_user)
         db.session.commit()
         return jsonify({'id': new_user.id, 'username': new_user.username, 'email': new_user.email})
+
+class TaskResource(Resource):
+    def get(self,id):
+        task = Task.query.get(id)
+        if not task:
+            return {'message': 'Task not found'}, 404
+        return jsonify({'id': task.id, 'title': task.title, 'description': task.description, 'status': task.status})
+
+    
 
 @app.route('/')
 def home():
