@@ -102,6 +102,20 @@ class Project(Resource):
         db.session.commit()
         return jsonify({'id': new_project.id, 'name': new_project.name, 'description': new_project.description})
 
+class UserTaskResource(Resource):
+    def get(self, id):
+        user_task = UserTask.query.get(id)
+        if not user_task:
+            return {'message': 'UserTask not found'}, 404
+        return jsonify({
+            'id': user_task.id,
+            'role': user_task.role,
+            'user_id': user_task.user_id,
+            'project_id': user_task.project_id,
+            'user': user_task.user.username,
+            'project': user_task.project.name
+        })
+
 @app.route('/')
 def home():
     return "<h1>Welcome to Task Tracker App</h1>"
