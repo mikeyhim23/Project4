@@ -55,8 +55,8 @@ class UserTask(db.Model):
 
 
 class UserResource(Resource):
-    def get(self, id):
-        user = User.query.get(id)
+    def get(self, user_id):
+        user = User.query.get(user_id)
         if not user:
             return {'message': 'User not found'}, 404
         return jsonify({'id': user.id, 'username': user.username, 'email': user.email})
@@ -73,27 +73,82 @@ class UserResource(Resource):
         db.session.commit()
         return jsonify({'id': new_user.id, 'username': new_user.username, 'email': new_user.email})
 
-# CRUD Endpoints for Task
-
 class TaskResource(Resource):
-    def get(self, id):
-        task = Task.query.get(id)
-        if not task:
-            return {'message': 'Task not found'}, 404
-        return jsonify({'id': task.id, 'title': task.title, 'description': task.description, 'status': task.status})
+    def get(self, task_id=None):
+        if task_id:
+            task = Task.query.get(task_id)
+            if not task:
+                return {'message': 'Task not found'}, 404
+            return jsonify({'id': task.id, 'title': task.title, 'description': task.description, 'status': task.status})
+        else:
+            tasks = Task.query.all()
+            return jsonify([{'id': task.id, 'title': task.title, 'description': task.description, 'status': task.status} for task in tasks])
 
     def post(self):
         data = request.get_json()
-        new_task = Task(title=data['title'], description=data['description'], status=data.get('status', 'pending'), user_id=data['user_id'])
+        if not data.get('title'):
+            return {'message': 'Title is required'}, 400
+        user = User.query.get(data.get('user_id'))
+        if not user:
+            return {'message': 'User not found'}, 404
+
+        valid_statuses = ['pending', 'in-progress', 'completed']
+        status = data.get('status', 'pending')
+        if status not in valid_statuses:
+            return {'message': f"Invalid status. Valid options are: {', '.join(valid_statuses)}"}, 400
+        
+        new_task = Task(
+            title=data['title'], 
+            description=data.get('description', ''),
+            status=status, 
+            user_id=data['user_id']
+        )
         db.session.add(new_task)
         db.session.commit()
-        return jsonify({'id': new_task.id, 'title': new_task.title, 'description': new_task.description, 'status': new_task.status})
+        
+        return jsonify({
+            'id': new_task.id,
+            'title': new_task.title,
+            'description': new_task.description,
+            'status': new_task.status
+        }), 201
 
-# CRUD Endpoints for Project
+    def put(self, task_id):
+        task = Task.query.get(task_id)
+        if not task:
+            return {'message': 'Task not found'}, 404
+
+        data = request.get_json()
+        if 'title' in data and not data['title']:
+            return {'message': 'Title cannot be empty'}, 400
+        valid_statuses = ['pending', 'in-progress', 'completed']
+        if 'status' in data and data['status'] not in valid_statuses:
+            return {'message': f"Invalid status. Valid options are: {', '.join(valid_statuses)}"}, 400
+
+        task.title = data.get('title', task.title)
+        task.description = data.get('description', task.description)
+        task.status = data.get('status', task.status)
+
+        db.session.commit()
+        return jsonify({
+            'id': task.id,
+            'title': task.title,
+            'description': task.description,
+            'status': task.status
+        })
+
+    def delete(self, task_id):
+        task = Task.query.get(task_id)
+        if not task:
+            return {'message': 'Task not found'}, 404
+
+        db.session.delete(task)
+        db.session.commit()
+        return {'message': 'Task deleted successfully'}
 
 class ProjectResource(Resource):
-    def get(self, id):
-        project = Project.query.get(id)
+    def get(self, project_id):
+        project = Project.query.get(project_id)
         if not project:
             return {'message': 'Project not found'}, 404
         return jsonify({'id': project.id, 'name': project.name, 'description': project.description})
@@ -105,11 +160,11 @@ class ProjectResource(Resource):
         db.session.commit()
         return jsonify({'id': new_project.id, 'name': new_project.name, 'description': new_project.description})
 
-# CRUD Endpoints for UserTask (Many-to-Many)
+
 
 class UserTaskResource(Resource):
-    def get(self, id):
-        user_task = UserTask.query.get(id)
+    def get(self, usertask_id):
+        user_task = UserTask.query.get(usertask_id)
         if not user_task:
             return {'message': 'UserTask not found'}, 404
         return jsonify({
