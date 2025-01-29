@@ -152,7 +152,7 @@ class ProjectResource(Resource):
         if not project:
             return {'message': 'Project not found'}, 404
         return jsonify({'id': project.id, 'name': project.name, 'description': project.description})
-
+    
     def post(self):
         data = request.get_json()
         new_project = Project(name=data['name'], description=data['description'])
