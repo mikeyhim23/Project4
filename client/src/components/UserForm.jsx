@@ -1,51 +1,38 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 
-const UserForm = () => {
-  const [username, setUsername] = useState('')
-  const [email, setEmail] = useState('')
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+const UserForm = ({ onUserAdd }) => {
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    setError('');
-    setSuccess('');
-
     if (!username || !email) {
-      setError('Both username and email are required.')
-      return
+      setError('Both username and email are required.');
+      return;
     }
-
-    if (!email.includes('@') || !email.includes('.')) {
-      setError('Invalid email format')
-      return
-    }
+    setError('');
 
     const userData = { username, email };
 
-    fetch('/user', {
+    fetch('https://task-project-ci1o.onrender.com/user', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData),
     })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok')
-        }
-        return response.json()
-      })
+      .then((response) => response.json())
       .then((data) => {
-        setSuccess('User created successfully!')
+        onUserAdd(data)
+        setUsername('')
+        setEmail('')
       })
-      .catch((error) => {
-        setError('Error creating user: ' + error.message)
-      })
+      .catch((error) => setError('Error creating user: ' + error.message))
   }
 
   return (
     <div>
-      <h2>Create New User</h2>
+      <h2>Create A New User</h2>
+      {error && <div style={{ color: 'red' }}>{error}</div>}
       <form onSubmit={handleSubmit}>
         <div>
           <label>Username:</label>
@@ -67,12 +54,10 @@ const UserForm = () => {
             required
           />
         </div>
-        {error && <div style={{ color: 'red' }}>{error}</div>}
-        {success && <div style={{ color: 'green' }}>{success}</div>}
         <button type="submit">Create User</button>
       </form>
     </div>
-  )
-}
+  );
+};
 
 export default UserForm;

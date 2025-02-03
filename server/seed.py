@@ -1,5 +1,4 @@
-from app import db, app
-from app import User, Project, Task, UserTask
+from models import db, User, Project, Task, UserTask
 import random
 from faker import Faker
 
@@ -63,6 +62,7 @@ def seed_db():
     seed_user_tasks()
 
 if __name__ == '__main__':
+    from app import app
     with app.app_context():
         seed_db()
  
